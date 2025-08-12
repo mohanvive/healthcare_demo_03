@@ -30,3 +30,18 @@ public type AllergyIntoleranceData record {|
     string category?;
     string criticality?;
 |};
+
+// Database endpoint configuration record
+public type EndpointConfig record {|
+    int id;
+    string endpointName;
+    string endpointUrl;
+    string endpointType; // JSON or XML
+    boolean isActive;
+|};
+
+// Database query result for endpoints
+public type EndpointQueryResult record {|
+    string endpointUrl;
+    string endpointType;
+|};

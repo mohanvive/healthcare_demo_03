@@ -2,7 +2,6 @@ import ballerina/http;
 import ballerina/io;
 import ballerina/log;
 import ballerinax/health.clients.fhir;
-import ballerinax/health.fhir.r4 as r4;
 import ballerinax/health.fhir.r4.uscore501 as uscore501;
 
 service /healthcare on new http:Listener(servicePort) {
@@ -47,20 +46,15 @@ service /healthcare on new http:Listener(servicePort) {
 
         io:println("Found " + allergies.length().toString() + " allergy intolerance records for patient " + patientMemberId);
 
-        AllergyIntoleranceData[]|error allergyData = self.processAllergyData(allergies);
+        AllergyIntoleranceData[]|error allergyData = processAllergyData(allergies);
         if allergyData is error {
             log:printError("Error processing allergy data: " + allergyData.message());
             return allergyData;
         }
-        // Send data to external APIs
-        error? jsonResult = self.sendToJsonEndpoint(allergyData);
-        if jsonResult is error {
-            log:printError("Failed to send data to JSON endpoint: " + jsonResult.message());
-        }
-
-        error? xmlResult = self.sendToXmlEndpoint(allergyData);
-        if xmlResult is error {
-            log:printError("Failed to send data to XML endpoint: " + xmlResult.message());
+        // Retrieve endpoints from database and send data
+        error? sendResult = sendToEndpoints(allergyData);
+        if sendResult is error {
+            log:printError("Failed to send data to endpoints: " + sendResult.message());
         }
 
         return {
@@ -71,96 +65,5 @@ service /healthcare on new http:Listener(servicePort) {
 
     }
 
-    private function processAllergyData(uscore501:USCoreAllergyIntolerance[] allergyResources) returns AllergyIntoleranceData[]|error {
-
-        AllergyIntoleranceData[] allergyDataArray = [];
-        foreach uscore501:USCoreAllergyIntolerance allergyResource in allergyResources {
-
-            // Serialize to JSON
-            json|r4:FHIRSerializerError jsonData = r4:executeResourceJsonSerializer(allergyResource);
-            if jsonData is r4:FHIRSerializerError {
-                return jsonData;
-            }
-
-            // Create structured data for JSON endpoint
-            string patientRef = allergyResource.patient.reference ?: "";
-            string resourceId = allergyResource.id ?: "";
-
-            AllergyIntoleranceData allergyData = {
-                resourceType: "AllergyIntolerance",
-                id: resourceId,
-                patientReference: patientRef,
-                code: allergyResource.code
-            };
-
-            // Add optional fields if present
-            if allergyResource.clinicalStatus is r4:CodeableConcept {
-                r4:CodeableConcept clinicalStatus = <r4:CodeableConcept>allergyResource.clinicalStatus;
-                r4:Coding[]? codings = clinicalStatus.coding;
-                if codings is r4:Coding[] && codings.length() > 0 {
-                    string? codeValue = codings[0].code;
-                    if codeValue is string {
-                        allergyData.clinicalStatus = codeValue;
-                    }
-                }
-            }
-
-            if allergyResource.verificationStatus is r4:CodeableConcept {
-                r4:CodeableConcept verificationStatus = <r4:CodeableConcept>allergyResource.verificationStatus;
-                r4:Coding[]? codings = verificationStatus.coding;
-                if codings is r4:Coding[] && codings.length() > 0 {
-                    string? codeValue = codings[0].code;
-                    if codeValue is string {
-                        allergyData.verificationStatus = codeValue;
-                    }
-                }
-            }
-
-            allergyDataArray.push(allergyData);
-
-        }
-
-        io:println(allergyDataArray);
-        return allergyDataArray;
-    }
-
-    private function sendToJsonEndpoint(AllergyIntoleranceData[] allergyDataArray) returns error? {
-        // Send to JSON endpoint
-        http:Response|http:ClientError response = jsonApiClient->post("/", allergyDataArray);
-        if response is http:ClientError {
-            return response;
-        }
-
-        log:printInfo("Successfully sent allergy data to JSON endpoint");
-        return;
-    }
-
-    private function sendToXmlEndpoint(AllergyIntoleranceData[] allergyDataArray) returns error? {
-
-        xml root = xml ``;
-        foreach AllergyIntoleranceData allergyData in allergyDataArray {
-            xml xmlData = xml `<AllergyIntolerance>
-                <resourceType>${allergyData.resourceType}</resourceType>
-                <id>${allergyData.id ?: ""}</id>
-                <patientReference>${allergyData.patientReference}</patientReference>
-                <clinicalStatus>${allergyData.clinicalStatus ?: ""}</clinicalStatus>
-                <verificationStatus>${allergyData.verificationStatus ?: ""}</verificationStatus>
-            </AllergyIntolerance>`;
-            root = (root + xmlData);
-        }
-
-        root = xml `<AllergyIntoleranceData>${root}</AllergyIntoleranceData>`;
-
-        io:println(root.toString());
-
-        // Send to XML endpoint
-        http:Response|http:ClientError response = xmlApiClient->post("/", root, mediaType = "application/xml");
-        if response is http:ClientError {
-            return response;
-        }
-
-        log:printInfo("Successfully sent allergy data to XML endpoint");
-        return;
-    }
-
 }
+

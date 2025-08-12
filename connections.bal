@@ -1,16 +1,6 @@
 import ballerinax/health.clients.fhir;
-import ballerina/http;
-
-// FHIR server configuration
-configurable string base = ?;
-configurable string tokenUrl = ?;
-configurable string clientIdValue = ?;
-configurable string clientSecret = ?;
-configurable string[] scopesArray = ["system/Patient.read", "system/Patient.create", "system/Observation.read", "system/AllergyIntolerance.read"];
-
-// External API endpoints configuration
-configurable string jsonApiEndpoint = "https://testmohan.free.beeceptor.com";
-configurable string xmlApiEndpoint = "https://testmohan.free.beeceptor.com";
+import ballerinax/mysql;
+import ballerinax/mysql.driver as _;
 
 // FHIR client configuration
 fhir:FHIRConnectorConfig cernerConfiuration = {
@@ -27,9 +17,12 @@ fhir:FHIRConnectorConfig cernerConfiuration = {
 // Initialize FHIR connector
 final fhir:FHIRConnector fhirConnectorObject = check new (cernerConfiuration);
 
-// HTTP clients for external APIs
-final http:Client jsonApiClient = check new (jsonApiEndpoint);
-final http:Client xmlApiClient = check new (xmlApiEndpoint);
+// Initialize database connection pool
+final mysql:Client dbClient = check new (
+    host = dbHost,
+    port = dbPort,
+    database = dbName,
+    user = dbUsername,
+    password = dbPassword
 
-// Service port configuration
-configurable int servicePort = 9090;
+);
