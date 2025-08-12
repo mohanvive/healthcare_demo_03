@@ -1,0 +1,7 @@
+[package]
+org = "mohan"
+name = "healthcare_demo_03"
+version = "0.1.0"
+
+[build-options]
+sticky = true
