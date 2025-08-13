@@ -3,7 +3,7 @@ org = "mohan"
 name = "healthcare_demo_03"
 version = "0.1.0"
 
-[[platform.java11.dependency]]
-groupId = "mysql"
-artifactId = "mysql-connector-java"
-version = "8.0.17"
+# [[platform.java11.dependency]]
+# groupId = "mysql"
+# artifactId = "mysql-connector-java"
+# version = "8.0.17"

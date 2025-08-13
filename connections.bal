@@ -24,5 +24,4 @@ final mysql:Client dbClient = check new (
     database = dbName,
     user = dbUsername,
     password = dbPassword
-
 );

@@ -1,0 +1,16 @@
+
+[mohan.healthcare_demo_03]
+base = "https://fhir-ehr-code.cerner.com/r4/ec2458f2-1e24-41c8-b71b-0e701af7583d"
+tokenUrl = "https://authorization.cerner.com/tenants/ec2458f2-1e24-41c8-b71b-0e701af7583d/protocols/oauth2/profiles/smart-v1/token"
+clientIdValue = "977f278f-eb3f-411e-b2ff-16c554501d69"
+clientSecret = "AW0nwz9LqNrb_pTzxUHsbqey1f0bzRv_"
+
+# Configuration file for "healthcare_demo_03"
+# 
+# This file contains configuration values for configurable variables in your Ballerina code.
+# Both package-specific and imported module configurations are included below.
+# 
+# Learn more about configurable variables:
+# https://ballerina.io/learn/provide-values-to-configurable-variables/#provide-via-toml-syntax
+#
+# Note: This file is automatically added to .gitignore to protect sensitive information.

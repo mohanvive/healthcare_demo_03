@@ -5,7 +5,7 @@ import ballerina/sql;
 import ballerinax/health.fhir.r4.uscore501 as uscore501;
 import ballerinax/health.fhir.r4 as r4;
 
-// Function to retrieve active endpoints from database
+//Function to retrieve active endpoints from database
 public function getActiveEndpoints() returns EndpointQueryResult[]|error {
 
     sql:ParameterizedQuery query = `
@@ -34,7 +34,7 @@ public function getActiveEndpoints() returns EndpointQueryResult[]|error {
     return endpoints;
 }
 
-// Function to get endpoints by type
+//Function to get endpoints by type
 public function getEndpointsByType(string endpointType) returns string[]|error {
 
     sql:ParameterizedQuery query = `
@@ -111,6 +111,7 @@ public function sendToXmlEndpoint(AllergyIntoleranceData[] allergyDataArray, str
 public function sendToEndpoints(AllergyIntoleranceData[] allergyDataArray) returns error? {
     //Get JSON endpoints from database
     string[]|error jsonEndpoints = getEndpointsByType("JSON");
+    //string[]|error jsonEndpoints = [];
     if jsonEndpoints is error {
         log:printError("Failed to retrieve JSON endpoints: " + jsonEndpoints.message());
     } else {
@@ -124,6 +125,7 @@ public function sendToEndpoints(AllergyIntoleranceData[] allergyDataArray) retur
 
     //Get XML endpoints from database
     string[]|error xmlEndpoints = getEndpointsByType("XML");
+    //string[]|error xmlEndpoints = [];
     if xmlEndpoints is error {
         log:printError("Failed to retrieve XML endpoints: " + xmlEndpoints.message());
     } else {
